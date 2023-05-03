@@ -12,7 +12,7 @@ const createItem = (req, res) => {
       res.send({ data: item });
     })
     .catch((error) => {
-      res.status(500).send({ message: "Error from createItem", error });
+      res.json({ error: { message: error.message } });
     });
 };
 
