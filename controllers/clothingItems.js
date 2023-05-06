@@ -6,21 +6,16 @@ const {
 } = require("../utils/error");
 
 const createItem = (req, res) => {
-  const { name, weather, imageURL } = req.body;
+  const { name, weather, imageUrl } = req.body;
+  const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
-      res.status(200).send(item);
-      console.log(req.user._id);
+      res.status(201).send(item);
     })
     .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
-        res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
+      if (error.name === "ValidationError") {
+        res.status(INVALID_DATA_ERROR.error).send({ message: error.message });
       } else {
         res.status(DEFAULT_ERROR.error).send({ message: error.message });
       }
@@ -31,27 +26,22 @@ const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((error) => {
-      if (error.name === DEFAULT_ERROR.name) {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
-      }
+      res.status(DEFAULT_ERROR.error).send({ message: error.message });
     });
 };
 
 const updateItem = (req, res) => {
   const { itemId } = req.params;
-  const { imageURL } = req.body;
+  const { imageUrl } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
-        res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
+      if (error.name === "ValidationError" || error.name === "CastError") {
+        res.status(INVALID_DATA_ERROR.error).send({ message: error.message });
+      } else if (error.name === "DocumentNotFoundError") {
+        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
       } else {
         res.status(DEFAULT_ERROR.error).send({ message: error.message });
       }
@@ -61,18 +51,19 @@ const updateItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
-    .then((item) => res.status(204).send({}))
+    .then((item) => {
+      if (!item) {
+        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+      } else {
+        res.status(200).send({ data: item });
+      }
+    })
     .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
+      if (error.name === "CastError") {
         res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid item ID" });
       } else {
         res.status(DEFAULT_ERROR.error).send({ message: error.message });
       }
@@ -80,21 +71,26 @@ const deleteItem = (req, res) => {
 };
 
 const likeItem = (req, res) => {
+  const { itemId } = req.params;
+  const { _id: userId } = req.user;
+
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $addToSet: { likes: req.user._id } },
+    itemId,
+    { $addToSet: { likes: userId } },
     { new: true }
   )
-    .orFail()
-    .then((item) => res.status(200).send({ data: item }))
+    .then((item) => {
+      if (!item) {
+        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+      } else {
+        res.status(200).send({ data: item });
+      }
+    })
     .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
+      if (error.name === "CastError") {
         res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid item ID" });
       } else {
         res.status(DEFAULT_ERROR.error).send({ message: error.message });
       }
@@ -102,21 +98,26 @@ const likeItem = (req, res) => {
 };
 
 const dislikeItem = (req, res) => {
+  const { itemId } = req.params;
+  const { _id: userId } = req.user;
+
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $pull: { likes: req.user._id } },
+    itemId,
+    { $pull: { likes: userId } },
     { new: true }
   )
-    .orFail()
-    .then((item) => res.status(200).send({ data: item }))
+    .then((item) => {
+      if (!item) {
+        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+      } else {
+        res.status(200).send({ data: item });
+      }
+    })
     .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
+      if (error.name === "CastError") {
         res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid item ID" });
       } else {
         res.status(DEFAULT_ERROR.error).send({ message: error.message });
       }

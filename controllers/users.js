@@ -1,4 +1,9 @@
 const User = require("../models/user");
+const {
+  DEFAULT_ERROR,
+  INVALID_DATA_ERROR,
+  NOTFOUND_ERROR,
+} = require("../utils/error");
 
 const createUser = (req, res) => {
   const { name, avatar } = req.body;

@@ -11,18 +11,18 @@ mongoose
     console.log({ e: { message: e.message } });
   });
 
-const routes = require("./routes");
-app.use(express.json());
-app.use(routes);
-
-const { PORT = 3001 } = process.env;
-
 app.use((req, res, next) => {
   req.user = {
     _id: "64557cecf39a49147ce3a83b",
   };
   next();
 });
+
+const routes = require("./routes");
+app.use(express.json());
+app.use(routes);
+
+const { PORT = 3001 } = process.env;
 
 app.listen(PORT, () => {
   console.log(`App listening at port ${PORT}`);
