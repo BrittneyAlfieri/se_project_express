@@ -8,7 +8,16 @@ const createUser = (req, res) => {
       res.status(200).send({ data: user });
     })
     .catch((error) => {
-      res.status(500).send({ message: "Error with createUser", error });
+      if (
+        error.name === INVALID_DATA_ERROR.name ||
+        error.name === NOTFOUND_ERROR.name
+      ) {
+        res
+          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
+          .send({ message: error.message });
+      } else {
+        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+      }
     });
 };
 
@@ -16,7 +25,16 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch((error) => {
-      res.status(500).send({ message: "Error with getUser", error });
+      if (
+        error.name === INVALID_DATA_ERROR.name ||
+        error.name === NOTFOUND_ERROR.name
+      ) {
+        res
+          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
+          .send({ message: error.message });
+      } else {
+        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+      }
     });
 };
 
@@ -26,7 +44,9 @@ const getUser = (req, res) => {
   User.findById(userId)
     .then((user) => res.status(200).send(user))
     .catch((error) => {
-      res.status(500).send({ message: "Error with getUserId", error });
+      if (error.name === DEFAULT_ERROR.name) {
+        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+      }
     });
 };
 
