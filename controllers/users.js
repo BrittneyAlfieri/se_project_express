@@ -13,15 +13,14 @@ const createUser = (req, res) => {
       res.status(200).send({ data: user });
     })
     .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
+      if (error.name === "ValidationError") {
         res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid data provided" });
       } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };
@@ -29,17 +28,10 @@ const createUser = (req, res) => {
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((error) => {
-      if (
-        error.name === INVALID_DATA_ERROR.name ||
-        error.name === NOTFOUND_ERROR.name
-      ) {
-        res
-          .status(INVALID_DATA_ERROR.error || NOTFOUND_ERROR.error)
-          .send({ message: error.message });
-      } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
-      }
+    .catch(() => {
+      res
+        .status(DEFAULT_ERROR.error)
+        .send({ message: "An error has occured on the server" });
     });
 };
 
@@ -47,10 +39,22 @@ const getUser = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .then((user) => res.status(200).send(user))
+    .then((item) => {
+      if (!item) {
+        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
+      } else {
+        res.status(200).send({ data: item });
+      }
+    })
     .catch((error) => {
-      if (error.name === DEFAULT_ERROR.name) {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+      if (error.name === "CastError") {
+        res
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid user ID" });
+      } else {
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };

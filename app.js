@@ -1,15 +1,14 @@
 const express = require("express");
-const mongoose = require("mongoose");
+
 const app = express();
 
-mongoose
-  .connect("mongodb://0.0.0.0:27017/wtwr_db")
-  .then(() => {
-    console.log(`successfully connected`);
-  })
-  .catch((e) => {
-    console.log({ e: { message: e.message } });
-  });
+const mongoose = require("mongoose");
+
+const routes = require("./routes");
+
+const { PORT = 3001 } = process.env;
+
+mongoose.connect("mongodb://0.0.0.0:27017/wtwr_db");
 
 app.use((req, res, next) => {
   req.user = {
@@ -18,12 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const routes = require("./routes");
 app.use(express.json());
 app.use(routes);
 
-const { PORT = 3001 } = process.env;
-
-app.listen(PORT, () => {
-  console.log(`App listening at port ${PORT}`);
-});
+app.listen(PORT, () => {});

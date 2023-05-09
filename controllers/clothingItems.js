@@ -7,7 +7,7 @@ const {
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
-  const owner = req.user._id;
+  const owner = req.user.id;
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
@@ -15,9 +15,13 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error).send({ message: error.message });
+        res
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid data provided" });
       } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };
@@ -25,8 +29,10 @@ const createItem = (req, res) => {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch((error) => {
-      res.status(DEFAULT_ERROR.error).send({ message: error.message });
+    .catch(() => {
+      res
+        .status(DEFAULT_ERROR.error)
+        .send({ message: "An error has occured on the server" });
     });
 };
 
@@ -39,11 +45,15 @@ const updateItem = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((error) => {
       if (error.name === "ValidationError" || error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error).send({ message: error.message });
+        res
+          .status(INVALID_DATA_ERROR.error)
+          .send({ message: "Invalid data provided" });
       } else if (error.name === "DocumentNotFoundError") {
         res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
       } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };
@@ -65,7 +75,9 @@ const deleteItem = (req, res) => {
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid item ID" });
       } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };
@@ -92,7 +104,9 @@ const likeItem = (req, res) => {
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid item ID" });
       } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };
@@ -119,7 +133,9 @@ const dislikeItem = (req, res) => {
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid item ID" });
       } else {
-        res.status(DEFAULT_ERROR.error).send({ message: error.message });
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "An error has occured on the server" });
       }
     });
 };
