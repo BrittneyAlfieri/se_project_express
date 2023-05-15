@@ -60,8 +60,9 @@ const updateItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  const { _id: userId } = req.user;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findOneAndDelete({ _id: itemId, userId })
     .then((item) => {
       if (!item) {
         res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
@@ -77,7 +78,7 @@ const deleteItem = (req, res) => {
       } else {
         res
           .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+          .send({ message: "An error has occurred on the server" });
       }
     });
 };
