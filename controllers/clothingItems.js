@@ -62,22 +62,28 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   const { _id: userId } = req.user;
 
-  ClothingItem.findOneAndDelete({ _id: itemId, userId })
+  ClothingItem.findOne({ _id: itemId, owner: userId })
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+        res.status(404).send({ message: "Item not found" });
       } else {
-        res.status(200).send({ data: item });
+        ClothingItem.deleteOne({ _id: itemId, owner: userId })
+          .then(() => {
+            res.status(200).send({ data: item });
+          })
+          .catch((error) => {
+            res
+              .status(500)
+              .send({ message: "An error has occurred on the server" });
+          });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
+        res.status(400).send({ message: "Invalid item ID" });
       } else {
         res
-          .status(DEFAULT_ERROR.error)
+          .status(500)
           .send({ message: "An error has occurred on the server" });
       }
     });
@@ -149,5 +155,3 @@ module.exports = {
   likeItem,
   dislikeItem,
 };
-
-

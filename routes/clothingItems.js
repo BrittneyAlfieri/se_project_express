@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const auth = require('./middlewares/auth');
+const auth = require("../middlewares/auth");
 
 const {
   createItem,
@@ -12,7 +12,7 @@ const {
 
 router.get("/", getItems);
 
-router.use(auth);
+router.use(auth.handleAuthError);
 
 router.post("/", createItem);
 
