@@ -35,16 +35,18 @@ const createUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  return User.findUserByCredentials(email, password)
-    .select("+password")
+  return User.findOne({ email: email, password: password })
     .then((user) => {
+      if (!user) {
+        return res.status(401).send({ message: "Invalid email or password" });
+      }
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      res.status(500).send({ message: "Internal server error" });
     });
 };
 
