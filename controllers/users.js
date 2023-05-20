@@ -6,24 +6,24 @@ const {
   INVALID_DATA_ERROR,
   NOTFOUND_ERROR,
 } = require("../utils/error");
+const { JWT_SECRET } = require("../utils/config");
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, avatar, email } = req.body;
   bcrypt
     .hash(req.body.password, 10)
-    .then((hash) =>
-      User.create({ name, avatar, email: req.body.email, password: hash })
-    )
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
-      res.status(200).send({ name, avatar, _id: user._id, email: user.email });
+      res.send({ name, avatar, _id: user._id, email: user.email });
     })
     .catch((error) => {
+      console.log(error);
       if (error.name === "ValidationError") {
         res
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid data provided" });
       } else if (error.code === 11000) {
-        res.status(400).send({ message: "Email already exists in database" });
+        res.status(409).send({ message: "Email already exists in database" });
       } else {
         res
           .status(DEFAULT_ERROR.error)
@@ -33,12 +33,14 @@ const createUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
-  return User.findOne({ email: email, password: password })
+  User.findOne({ email: email })
     .then((user) => {
       if (!user) {
-        return res.status(401).send({ message: "Invalid email or password" });
+        return res
+          .status(NOTFOUND_ERROR.error)
+          .send({ message: "User not found" });
       }
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
@@ -46,7 +48,9 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      res.status(500).send({ message: "Internal server error" });
+      res
+        .status(DEFAULT_ERROR.error)
+        .send({ message: "Internal server error" });
     });
 };
 

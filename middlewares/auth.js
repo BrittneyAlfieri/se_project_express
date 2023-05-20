@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = require("../utils/config");
+const { JWT_SECRET } = require("../utils/config");
 
 const handleAuthError = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("jwt_token ")) {
-    return res.status(403).send({ message: "Forbidden" });
+    console.log("unauthorized");
+    return res.status(403).send({ message: "Unauthorized" });
   }
 
   const token = authorization.replace("jwt_token", "");
