@@ -7,6 +7,7 @@ const {
   NOTFOUND_ERROR,
 } = require("../utils/error");
 const { JWT_SECRET } = require("../utils/config");
+const mongoose = require("mongoose");
 
 const createUser = (req, res) => {
   const { name, avatar, email } = req.body;
@@ -17,7 +18,6 @@ const createUser = (req, res) => {
       res.send({ name, avatar, _id: user._id, email: user.email });
     })
     .catch((error) => {
-      console.log(error);
       if (error.name === "ValidationError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -35,19 +35,20 @@ const createUser = (req, res) => {
 const login = (req, res) => {
   const { email } = req.body;
 
-  User.findOne({ email: email })
+  User.findOne({ email })
+    .select("+password")
     .then((user) => {
       if (!user) {
-        return res
-          .status(NOTFOUND_ERROR.error)
-          .send({ message: "User not found" });
+        return res.status(401).send({ message: "Email or Password not found" });
       }
+
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
     })
     .catch((err) => {
+      console.log(err);
       res
         .status(DEFAULT_ERROR.error)
         .send({ message: "Internal server error" });
@@ -96,17 +97,46 @@ const updateUser = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params;
+  const { _id: userId } = req.user;
 
   User.findById(userId)
-    .then((item) => {
-      if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: "User not found" });
       } else {
-        res.status(200).send({ data: item });
+        res.status(200).send({ data: user });
       }
     })
     .catch((error) => {
+      if (error.name === "CastError") {
+        res.status(400).send({ message: "Invalid user ID" });
+      } else {
+        res
+          .status(500)
+          .send({ message: "An error has occurred on the server" });
+      }
+    });
+};
+
+const getUser = (req, res) => {
+  const { userId } = req.params;
+  console.log(userId);
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    console.log(userId);
+    return res.status(400).send({ message: "Invalid user ID" });
+  }
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
+      } else {
+        res.status(200).send({ data: user });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)
@@ -125,4 +155,5 @@ module.exports = {
   getCurrentUser,
   login,
   getUsers,
+  getUser,
 };

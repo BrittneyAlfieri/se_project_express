@@ -2,19 +2,22 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 
 const handleAuthError = (req, res, next) => {
+  console.log("middlewear executed");
   const { authorization } = req.headers;
 
-  if (!authorization || !authorization.startsWith("jwt_token ")) {
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    console.log(authorization);
     console.log("unauthorized");
-    return res.status(403).send({ message: "Unauthorized" });
+    return res.status(401).send({ message: "Unauthorized" });
   }
 
-  const token = authorization.replace("jwt_token", "");
+  const token = authorization.replace("Bearer ", "");
   let payload;
 
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
+    console.log(err);
     if (err.name === "JsonWebTokenError") {
       return res.status(401).send({ message: "Invalid token" });
     } else if (err.name === "TokenExpiredError") {
