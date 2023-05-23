@@ -11,9 +11,13 @@ const mongoose = require("mongoose");
 
 const createUser = (req, res) => {
   const { name, avatar, email } = req.body;
+  console.log("Original Password:", req.body.password); // Log the original password
   bcrypt
     .hash(req.body.password, 10)
-    .then((hash) => User.create({ name, avatar, email, password: hash }))
+    .then((hash) => {
+      console.log("Hashed Password:", hash); // Log the hashed password
+      return User.create({ name, avatar, email, password: hash });
+    })
     .then((user) => {
       res.send({ name, avatar, _id: user._id, email: user.email });
     })
@@ -33,19 +37,28 @@ const createUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
+  console.log(email, password);
 
-  User.findOne({ email })
-    .select("+password")
+  User.findUserByCredentials(email, password)
+    .exec()
     .then((user) => {
       if (!user) {
         return res.status(401).send({ message: "Email or Password not found" });
       }
 
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return res
+            .status(401)
+            .send({ message: "Email or Password not found" });
+        }
+
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        res.send({ token });
       });
-      res.send({ token });
     })
     .catch((err) => {
       console.log(err);
