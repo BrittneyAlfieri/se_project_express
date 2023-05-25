@@ -46,9 +46,6 @@ userSchema.statics.findUserByCredentials = function (email, password) {
         throw UnauthorizedError;
       }
 
-      console.log("Password:", password);
-      console.log("User Password:", user.password);
-
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
           throw UnauthorizedError;

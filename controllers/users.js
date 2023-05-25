@@ -11,11 +11,10 @@ const mongoose = require("mongoose");
 
 const createUser = (req, res) => {
   const { name, avatar, email } = req.body;
-  console.log("Original Password:", req.body.password); // Log the original password
+
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
-      console.log("Hashed Password:", hash); // Log the hashed password
       return User.create({ name, avatar, email, password: hash });
     })
     .then((user) => {
@@ -46,8 +45,6 @@ const login = (req, res) => {
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          console.log("Password:", password);
-          console.log("User Password:", user.password);
           return res
             .status(401)
             .send({ message: "Email or Password not found" });
@@ -60,7 +57,6 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log("error:", err);
       if (err.statusCode === 401) {
         res.status(401).send({ message: "Email or Password not found" });
       } else {
@@ -136,10 +132,8 @@ const getCurrentUser = (req, res) => {
 
 const getUser = (req, res) => {
   const { userId } = req.params;
-  console.log(userId);
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    console.log(userId);
     return res.status(400).send({ message: "Invalid user ID" });
   }
 
@@ -152,7 +146,6 @@ const getUser = (req, res) => {
       }
     })
     .catch((error) => {
-      console.log(error);
       if (error.name === "CastError") {
         res
           .status(INVALID_DATA_ERROR.error)
