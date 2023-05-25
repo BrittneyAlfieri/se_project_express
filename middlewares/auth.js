@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
+const { FORBIDDEN_ERROR } = require("../utils/error");
 
 const handleAuthError = (req, res, next) => {
   console.log("middlewear executed");
@@ -23,7 +24,7 @@ const handleAuthError = (req, res, next) => {
     } else if (err.name === "TokenExpiredError") {
       return res.status(401).send({ message: "Token expired" });
     } else {
-      return res.status(400).send({ message: "Bad request" });
+      return res.status(FORBIDDEN_ERROR.error).send({ message: "Bad request" });
     }
   }
 

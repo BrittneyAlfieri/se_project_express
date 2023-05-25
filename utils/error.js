@@ -3,6 +3,11 @@ const INVALID_DATA_ERROR = {
   error: 400,
 };
 
+const FORBIDDEN_ERROR = {
+  status: "Forbidden",
+  error: 403,
+};
+
 const NOTFOUND_ERROR = {
   status: "NotFound",
   error: 404,
@@ -17,4 +22,5 @@ module.exports = {
   INVALID_DATA_ERROR,
   NOTFOUND_ERROR,
   DEFAULT_ERROR,
+  FORBIDDEN_ERROR,
 };

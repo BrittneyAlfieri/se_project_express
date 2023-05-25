@@ -38,17 +38,16 @@ const createUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
 
   User.findUserByCredentials(email, password)
-    .exec()
     .then((user) => {
       if (!user) {
         return res.status(401).send({ message: "Email or Password not found" });
       }
-
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
+          console.log("Password:", password);
+          console.log("User Password:", user.password);
           return res
             .status(401)
             .send({ message: "Email or Password not found" });
@@ -61,10 +60,14 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "Internal server error" });
+      console.log("error:", err);
+      if (err.statusCode === 401) {
+        res.status(401).send({ message: "Email or Password not found" });
+      } else {
+        res
+          .status(DEFAULT_ERROR.error)
+          .send({ message: "Internal server error" });
+      }
     });
 };
 
