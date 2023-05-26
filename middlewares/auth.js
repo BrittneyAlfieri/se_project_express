@@ -17,16 +17,18 @@ const handleAuthError = (req, res, next) => {
   } catch (err) {
     if (err.name === "JsonWebTokenError") {
       return res.status(401).send({ message: "Invalid token" });
-    } else if (err.name === "TokenExpiredError") {
-      return res.status(401).send({ message: "Token expired" });
-    } else {
-      return res.status(FORBIDDEN_ERROR.error).send({ message: "Bad request" });
     }
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).send({ message: "Token expired" });
+    }
+    return res.status(FORBIDDEN_ERROR.error).send({ message: "Bad request" });
   }
 
   req.user = payload;
 
   next();
+
+  return null;
 };
 
 module.exports = {

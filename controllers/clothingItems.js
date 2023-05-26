@@ -66,35 +66,37 @@ const deleteItem = (req, res) => {
   ClothingItem.findOne({ _id: itemId })
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
-      } else {
-        if (item.owner !== userId) {
-          res.status(FORBIDDEN_ERROR.error).send({
-            message: "Unauthorized: Only the card owner can delete it",
-          });
-        } else {
-          ClothingItem.deleteOne({ _id: itemId, owner: userId })
-            .then(() => {
-              res.status(200).send({ message: "Item deleted successfully" });
-            })
-            .catch((error) => {
-              res
-                .status(DEFAULT_ERROR.error)
-                .send({ message: "An error has occurred on the server" });
-            });
-        }
+        return res
+          .status(NOTFOUND_ERROR.error)
+          .send({ message: "Item not found" });
       }
+
+      if (!item.owner.equals(userId)) {
+        return res.status(FORBIDDEN_ERROR.error).send({
+          message: "Unauthorized: Only the card owner can delete it",
+        });
+      }
+
+      return ClothingItem.deleteOne({ _id: itemId, owner: userId })
+        .then(() => {
+          res.status(200).send({ message: "Item deleted successfully" });
+        })
+        .catch(() => {
+          res
+            .status(DEFAULT_ERROR.error)
+            .send({ message: "An error has occurred on the server" });
+        });
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res
+        return res
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid item ID" });
-      } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occurred on the server" });
       }
+
+      return res
+        .status(DEFAULT_ERROR.error)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 

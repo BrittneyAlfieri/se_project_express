@@ -36,7 +36,10 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password
+) {
   const UnauthorizedError = new Error("Unauthorized user");
   UnauthorizedError.statusCode = 401;
   return this.findOne({ email })

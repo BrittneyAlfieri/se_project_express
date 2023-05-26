@@ -1,22 +1,27 @@
 const bcrypt = require("bcryptjs");
-const User = require("../models/user");
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 const {
   DEFAULT_ERROR,
   INVALID_DATA_ERROR,
   NOTFOUND_ERROR,
+  CONFLICT_ERROR,
 } = require("../utils/error");
 const { JWT_SECRET } = require("../utils/config");
-const mongoose = require("mongoose");
 
 const createUser = (req, res) => {
-  const { name, avatar, email } = req.body;
+  const { name, avatar, email, password } = req.body;
+
+  if (!password) {
+    res
+      .status(INVALID_DATA_ERROR.error)
+      .send({ message: "Password is required" });
+  }
 
   bcrypt
-    .hash(req.body.password, 10)
-    .then((hash) => {
-      return User.create({ name, avatar, email, password: hash });
-    })
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
       res.send({ name, avatar, _id: user._id, email: user.email });
     })
@@ -26,7 +31,9 @@ const createUser = (req, res) => {
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid data provided" });
       } else if (error.code === 11000) {
-        res.status(409).send({ message: "Email already exists in database" });
+        res
+          .status(CONFLICT_ERROR.error)
+          .send({ message: "Email already exists in database" });
       } else {
         res
           .status(DEFAULT_ERROR.error)
@@ -45,9 +52,7 @@ const login = (req, res) => {
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return res
-            .status(401)
-            .send({ message: "Email or Password not found" });
+          res.status(401).send({ message: "Email or Password not found" });
         }
 
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -88,16 +93,14 @@ const updateUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res
-          .status(NOTFOUND_ERROR.error)
-          .send({ message: "User not found" });
+        res.status(NOTFOUND_ERROR.error).send({ message: "User not found" });
       }
 
       res.status(200).send({ data: user });
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        return res
+        res
           .status(INVALID_DATA_ERROR.error)
           .send({ message: "Invalid data provided" });
       }
@@ -134,7 +137,7 @@ const getUser = (req, res) => {
   const { userId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).send({ message: "Invalid user ID" });
+    res.status(400).send({ message: "Invalid user ID" });
   }
 
   User.findById(userId)
