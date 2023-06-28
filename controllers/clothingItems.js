@@ -6,7 +6,7 @@ const {
   FORBIDDEN_ERROR,
 } = require("../utils/error");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
@@ -16,9 +16,9 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid data provided" });
+        res.status(INVALID_DATA_ERROR.error);
+        next(new Error("Invalid data provided"));
+        // .send({ message: "Invalid data provided" });
       } else {
         res
           .status(DEFAULT_ERROR.error)
