@@ -14,7 +14,7 @@ const { PORT = 3001 } = process.env;
 
 mongoose.connect("mongodb://0.0.0.0:27017/wtwr_db");
 
-const errorHandler = require("./middlewares/error-handler");
+const { errorHandler } = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 app.use(cors());
