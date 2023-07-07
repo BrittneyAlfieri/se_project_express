@@ -1,4 +1,9 @@
 const ClothingItem = require("../models/clothingItem");
+
+const badRequestError = require("../errors/bad-request-error");
+const notFoundError = require("../errors/not-found-error");
+const forbiddenError = require("../errors/forbidden-error");
+
 const {
   INVALID_DATA_ERROR,
   NOTFOUND_ERROR,
@@ -17,8 +22,7 @@ const createItem = (req, res, next) => {
     .catch((error) => {
       if (error.name === "ValidationError") {
         res.status(INVALID_DATA_ERROR.error);
-        next(new Error("Invalid data provided"));
-        // .send({ message: "Invalid data provided" });
+        next(new badRequestError("Invalid data provided"));
       } else {
         res
           .status(DEFAULT_ERROR.error)
@@ -46,11 +50,11 @@ const updateItem = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((error) => {
       if (error.name === "ValidationError" || error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid data provided" });
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid data provided"));
       } else if (error.name === "DocumentNotFoundError") {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+        res.status(NOTFOUND_ERROR.error);
+        next(new notFoundError("Item not found"));
       } else {
         res
           .status(DEFAULT_ERROR.error)
@@ -66,15 +70,15 @@ const deleteItem = (req, res) => {
   ClothingItem.findOne({ _id: itemId })
     .then((item) => {
       if (!item) {
-        return res
-          .status(NOTFOUND_ERROR.error)
-          .send({ message: "Item not found" });
+        res.status(NOTFOUND_ERROR.error);
+        next(new notFoundError("item not found"));
       }
 
       if (!item.owner.equals(userId)) {
-        return res.status(FORBIDDEN_ERROR.error).send({
-          message: "Unauthorized: Only the card owner can delete it",
-        });
+        res.status(FORBIDDEN_ERROR.error);
+        next(
+          new forbiddenError("Unauthorized: Only the card owner can delete it")
+        );
       }
 
       return ClothingItem.deleteOne({ _id: itemId, owner: userId })
@@ -89,9 +93,8 @@ const deleteItem = (req, res) => {
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        return res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid data provided"));
       }
 
       return res
@@ -111,16 +114,16 @@ const likeItem = (req, res) => {
   )
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+        res.status(NOTFOUND_ERROR.error);
+        next(new notFoundError("Item not found"));
       } else {
         res.status(200).send({ data: item });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid data provided"));
       } else {
         res
           .status(DEFAULT_ERROR.error)
@@ -140,16 +143,16 @@ const dislikeItem = (req, res) => {
   )
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error).send({ message: "Item not found" });
+        res.status(NOTFOUND_ERROR.error);
+        next(new notFoundError("item not found"));
       } else {
         res.status(200).send({ data: item });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res
-          .status(INVALID_DATA_ERROR.error)
-          .send({ message: "Invalid item ID" });
+        res.status(INVALID_DATA_ERROR.error);
+        next(new badRequestError("Invalid data provided"));
       } else {
         res
           .status(DEFAULT_ERROR.error)
