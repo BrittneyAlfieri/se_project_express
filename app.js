@@ -10,6 +10,8 @@ const routes = require("./routes");
 
 const { errors } = require("celebrate");
 
+require("dontev").config();
+
 const { PORT = 3001 } = process.env;
 
 mongoose.connect("mongodb://0.0.0.0:27017/wtwr_db");
