@@ -11,3 +11,7 @@ The project is written in React and uses a rest API for the current weather cond
 `npm run start` — to launch the server
 
 `npm run dev` — to launch the server with the hot reload feature
+
+## Domain
+
+www.wtwr.wildsurf.net
