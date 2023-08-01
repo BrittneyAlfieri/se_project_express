@@ -1,9 +1,9 @@
-const unauthorizedError = (message) => {
-  const error = new Error(message);
-  error.statusCode = 401;
-  return error;
-};
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnauthorizedError";
+    this.statusCode = 401;
+  }
+}
 
-module.exports = {
-  unauthorizedError,
-};
+module.exports = UnauthorizedError;

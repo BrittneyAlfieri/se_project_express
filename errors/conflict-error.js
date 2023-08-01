@@ -1,9 +1,11 @@
-const conflictError = (message) => {
-  const error = new Error(message);
-  error.statusCode = 409;
-  return error;
-};
+class ConflictError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ConflictError";
+    this.statusCode = 409;
+  }
+}
 
 module.exports = {
-  conflictError,
+  ConflictError,
 };

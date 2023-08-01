@@ -1,9 +1,9 @@
-const notFoundError = (message) => {
-  const error = new Error(message);
-  error.statusCode = 404;
-  return error;
-};
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "NotFoundError";
+    this.statusCode = 404;
+  }
+}
 
-module.exports = {
-  notFoundError,
-};
+module.exports = NotFoundError;

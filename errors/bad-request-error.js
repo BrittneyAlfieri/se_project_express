@@ -1,9 +1,11 @@
-const badRequestError = (message) => {
-  const error = new Error(message);
-  error.statusCode = 400;
-  return error;
-};
+class BadRequestError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "BadRequestError";
+    this.statusCode = 400;
+  }
+}
 
 module.exports = {
-  badRequestError,
+  BadRequestError,
 };

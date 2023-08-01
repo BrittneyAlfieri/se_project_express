@@ -1,9 +1,11 @@
-const forbiddenError = (message) => {
-  const error = new Error(message);
-  error.statusCode = 403;
-  return error;
-};
+class ForbiddenError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = `ForbiddenError`;
+    this.statusCode = 403;
+  }
+}
 
 module.exports = {
-  forbiddenError,
+  ForbiddenError,
 };
