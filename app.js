@@ -6,11 +6,11 @@ const cors = require("cors");
 
 const mongoose = require("mongoose");
 
-const routes = require("./routes");
-
 const { errors } = require("celebrate");
 
-require("dontev").config();
+require("dotenv").config();
+
+const routes = require("./routes");
 
 const { PORT = 3001 } = process.env;
 
