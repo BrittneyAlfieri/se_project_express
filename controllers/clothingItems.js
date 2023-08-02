@@ -1,15 +1,8 @@
 const ClothingItem = require("../models/clothingItem");
 
-const badRequestError = require("../errors/bad-request-error");
-const notFoundError = require("../errors/not-found-error");
-const forbiddenError = require("../errors/forbidden-error");
-
-const {
-  INVALID_DATA_ERROR,
-  NOTFOUND_ERROR,
-  DEFAULT_ERROR,
-  FORBIDDEN_ERROR,
-} = require("../utils/error");
+const BadRequestError = require("../errors/bad-request-error");
+const NotFoundError = require("../errors/not-found-error");
+const ForbiddenError = require("../errors/forbidden-error");
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
@@ -21,12 +14,9 @@ const createItem = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };
@@ -34,10 +24,8 @@ const createItem = (req, res, next) => {
 const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch(() => {
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occured on the server" });
+    .catch((error) => {
+      next(error);
     });
 };
 
@@ -50,15 +38,11 @@ const updateItem = (req, res, next) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((error) => {
       if (error.name === "ValidationError" || error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else if (error.name === "DocumentNotFoundError") {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("Item not found"));
+        next(new NotFoundError("Item not found"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };
@@ -70,14 +54,12 @@ const deleteItem = (req, res, next) => {
   ClothingItem.findOne({ _id: itemId })
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("item not found"));
+        next(new NotFoundError("item not found"));
       }
 
       if (!item.owner.equals(userId)) {
-        res.status(FORBIDDEN_ERROR.error);
         next(
-          new forbiddenError("Unauthorized: Only the card owner can delete it")
+          new ForbiddenError("Unauthorized: Only the card owner can delete it")
         );
       }
 
@@ -85,21 +67,16 @@ const deleteItem = (req, res, next) => {
         .then(() => {
           res.status(200).send({ message: "Item deleted successfully" });
         })
-        .catch(() => {
-          res
-            .status(DEFAULT_ERROR.error)
-            .send({ message: "An error has occurred on the server" });
+        .catch((error) => {
+          next(error);
         });
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       }
 
-      return res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
+      return next(error);
     });
 };
 
@@ -114,20 +91,16 @@ const likeItem = (req, res, next) => {
   )
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("Item not found"));
+        next(new NotFoundError("Item not found"));
       } else {
         res.status(200).send({ data: item });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };
@@ -143,20 +116,16 @@ const dislikeItem = (req, res, next) => {
   )
     .then((item) => {
       if (!item) {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("item not found"));
+        next(new NotFoundError("item not found"));
       } else {
         res.status(200).send({ data: item });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };

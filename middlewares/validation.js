@@ -15,7 +15,7 @@ const validateEmail = (value, helpers) => {
   return helpers.error("string.email");
 };
 
-validateCardBody = celebrate({
+const validateCardBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30).messages({
       "string.min": 'The minimum length of the "name" field is 2',
@@ -27,10 +27,14 @@ validateCardBody = celebrate({
       "string.empty": 'The "imageUrl" field must be filled in',
       "string.uri": 'the "imageUrl" field must be a valid url',
     }),
+
+    weather: Joi.string().valid("hot", "warm", "cold").required().messages({
+      "string.empty": `The "weather field" must be filled in`,
+    }),
   }),
 });
 
-validateUserBody = celebrate({
+const validateUserBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30).messages({
       "string.min": 'The minimum length of the "name" field is 2',
@@ -54,7 +58,22 @@ validateUserBody = celebrate({
   }),
 });
 
-validateUserAuthentication = celebrate({
+const validateUserAvatar = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30).messages({
+      "string.min": 'The minimum length of the "name" field is 2',
+      "string.max": 'The maximum length of the "name" field is 30',
+      "string.empty": 'The "name" field must be filled in',
+    }),
+
+    imageUrl: Joi.string().required().custom(validateURL).messages({
+      "string.empty": 'The "imageUrl" field must be filled in',
+      "string.uri": 'the "imageUrl" field must be a valid url',
+    }),
+  }),
+});
+
+const validateUserAuthentication = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(validateEmail).messages({
       "string.empty": `The "email" field must be filled in`,
@@ -67,9 +86,16 @@ validateUserAuthentication = celebrate({
   }),
 });
 
-validateItemIDs = celebrate({
+const validateItemID = celebrate({
   params: Joi.object().keys({
-    itemId: Joi.alphanum().length(24),
-    _id: Joi.alphanum().length(24),
+    itemId: Joi.string().required().length(24).hex(),
   }),
 });
+
+module.exports = {
+  validateCardBody,
+  validateUserBody,
+  validateUserAuthentication,
+  validateItemID,
+  validateUserAvatar,
+};

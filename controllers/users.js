@@ -3,25 +3,18 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
-const badRequestError = require("../errors/bad-request-error");
-const notFoundError = require("../errors/not-found-error");
-const conflictError = require("../errors/conflict-error");
-const unauthorizedError = require("../errors/unauthorized-error");
+const BadRequestError = require("../errors/bad-request-error");
+const NotFoundError = require("../errors/not-found-error");
+const ConflictError = require("../errors/conflict-error");
+const UnauthorizedError = require("../errors/unauthorized-error");
 
-const {
-  DEFAULT_ERROR,
-  INVALID_DATA_ERROR,
-  NOTFOUND_ERROR,
-  CONFLICT_ERROR,
-} = require("../utils/error");
 const { JWT_SECRET } = require("../utils/config");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   if (!password) {
-    res.status(INVALID_DATA_ERROR.error);
-    next(new badRequestError("Password is required"));
+    next(new BadRequestError("Password is required"));
   }
 
   bcrypt
@@ -32,16 +25,12 @@ const createUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       } else if (error.code === 11000) {
-        res.status(CONFLICT_ERROR.error);
-        next(new conflictError("Email already exists in database"));
+        next(new ConflictError("Email already exists in database"));
       }
 
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
+      next(error);
     });
 };
 
@@ -51,13 +40,11 @@ const login = (req, res, next) => {
   User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        res.status(401);
-        next(new unauthorizedError("Email or Password not found"));
+        next(new UnauthorizedError("Email or Password not found"));
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          res.status(401);
-          next(new unauthorizedError("Email or Password not found"));
+          next(new UnauthorizedError("Email or Password not found"));
         }
 
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -66,25 +53,20 @@ const login = (req, res, next) => {
         res.send({ token });
       });
     })
-    .catch((err) => {
-      if (err.statusCode === 401) {
-        res.status(401);
-        next(new unauthorizedError("Email or Password not found"));
+    .catch((error) => {
+      if (error.statusCode === 401) {
+        next(new UnauthorizedError("Email or Password not found"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "Internal server error" });
+        next(error);
       }
     });
 };
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch(() => {
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occured on the server" });
+    .catch((error) => {
+      next(error);
     });
 };
 
@@ -99,21 +81,17 @@ const updateUser = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("User not found"));
+        next(new NotFoundError("User not found"));
       }
 
       res.status(200).send({ data: user });
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid data provided"));
+        next(new BadRequestError("Invalid data provided"));
       }
 
-      res
-        .status(DEFAULT_ERROR.error)
-        .send({ message: "An error has occurred on the server" });
+      next(error);
     });
 };
 
@@ -123,49 +101,40 @@ const getCurrentUser = (req, res, next) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("User not found"));
+        next(new NotFoundError("User not found"));
       } else {
         res.status(200).send({ data: user });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid user ID"));
+        next(new BadRequestError("Invalid user ID"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occurred on the server" });
+        next(error);
       }
     });
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   const { userId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    res.status(INVALID_DATA_ERROR.error);
-    next(new badRequestError("Invalid user ID"));
+    next(new BadRequestError("Invalid user ID"));
   }
 
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        res.status(NOTFOUND_ERROR.error);
-        next(new notFoundError("User not found"));
+        next(new NotFoundError("User not found"));
       } else {
         res.status(200).send({ data: user });
       }
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(INVALID_DATA_ERROR.error);
-        next(new badRequestError("Invalid user ID"));
+        next(new BadRequestError("Invalid user ID"));
       } else {
-        res
-          .status(DEFAULT_ERROR.error)
-          .send({ message: "An error has occured on the server" });
+        next(error);
       }
     });
 };

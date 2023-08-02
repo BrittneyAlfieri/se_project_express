@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { celebrate } = require("celebrate");
 const auth = require("../middlewares/auth");
 
 const {
@@ -10,16 +11,41 @@ const {
   dislikeItem,
 } = require("../controllers/clothingItems");
 
+const {
+  validateCardBody,
+  validateItemID,
+} = require("../middlewares/validation");
+
 router.get("/", getItems);
 
-router.post("/", auth.handleAuthError, createItem);
+router.post("/", auth.handleAuthError, celebrate(validateCardBody), createItem);
 
-router.put("/:itemId", auth.handleAuthError, updateItem);
+router.put(
+  "/:itemId",
+  auth.handleAuthError,
+  celebrate(validateItemID),
+  updateItem
+);
 
-router.put("/:itemId/likes", auth.handleAuthError, likeItem);
+router.put(
+  "/:itemId/likes",
+  auth.handleAuthError,
+  celebrate(validateItemID),
+  likeItem
+);
 
-router.delete("/:itemId", auth.handleAuthError, deleteItem);
+router.delete(
+  "/:itemId",
+  auth.handleAuthError,
+  celebrate(validateItemID),
+  deleteItem
+);
 
-router.delete("/:itemId/likes", auth.handleAuthError, dislikeItem);
+router.delete(
+  "/:itemId/likes",
+  auth.handleAuthError,
+  celebrate(validateItemID),
+  dislikeItem
+);
 
 module.exports = router;
