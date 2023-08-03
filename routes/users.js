@@ -10,8 +10,8 @@ router.get("/me", auth.handleAuthError, getCurrentUser);
 
 router.patch(
   "/me",
+  celebrate({ body: validateUserAvatar }),
   auth.handleAuthError,
-  celebrate(validateUserAvatar),
   updateUser
 );
 

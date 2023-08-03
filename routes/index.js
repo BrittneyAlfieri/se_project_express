@@ -20,8 +20,8 @@ router.get(`/crash-rest`, () => {
   }, 0);
 });
 
-router.post("/signup", celebrate(validateUserBody), createUser);
-router.post("/signin", celebrate(validateUserAuthentication), login);
+router.post("/signup", celebrate({ body: validateUserBody }), createUser);
+router.post("/signin", celebrate({ body: validateUserAuthentication }), login);
 
 router.use(() => {
   throw new NotFoundError("NotFoundError");

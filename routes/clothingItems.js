@@ -18,33 +18,42 @@ const {
 
 router.get("/", getItems);
 
-router.post("/", auth.handleAuthError, celebrate(validateCardBody), createItem);
+router.post(
+  "/",
+  celebrate({ body: validateCardBody }),
+  auth.handleAuthError,
+  createItem
+);
 
 router.put(
   "/:itemId",
   auth.handleAuthError,
-  celebrate(validateItemID),
+  celebrate({ body: validateItemID }),
   updateItem
 );
 
 router.put(
   "/:itemId/likes",
+  celebrate({
+    body: validateItemID,
+  }),
   auth.handleAuthError,
-  celebrate(validateItemID),
   likeItem
 );
 
 router.delete(
   "/:itemId",
+  celebrate({ body: validateItemID }),
   auth.handleAuthError,
-  celebrate(validateItemID),
+
   deleteItem
 );
 
 router.delete(
   "/:itemId/likes",
+  celebrate({ body: validateItemID }),
   auth.handleAuthError,
-  celebrate(validateItemID),
+
   dislikeItem
 );
 
