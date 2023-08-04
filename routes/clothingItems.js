@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { celebrate } = require("celebrate");
+
 const auth = require("../middlewares/auth");
 
 const {
@@ -18,42 +18,18 @@ const {
 
 router.get("/", getItems);
 
-router.post(
-  "/",
-  celebrate({ body: validateCardBody }),
-  auth.handleAuthError,
-  createItem
-);
+router.post("/", validateCardBody, auth.handleAuthError, createItem);
 
-router.put(
-  "/:itemId",
-  auth.handleAuthError,
-  celebrate({ body: validateItemID }),
-  updateItem
-);
+router.put("/:itemId", validateItemID, auth.handleAuthError, updateItem);
 
-router.put(
-  "/:itemId/likes",
-  celebrate({
-    body: validateItemID,
-  }),
-  auth.handleAuthError,
-  likeItem
-);
+router.put("/:itemId/likes", validateItemID, auth.handleAuthError, likeItem);
 
-router.delete(
-  "/:itemId",
-  celebrate({ body: validateItemID }),
-  auth.handleAuthError,
-
-  deleteItem
-);
+router.delete("/:itemId", validateItemID, auth.handleAuthError, deleteItem);
 
 router.delete(
   "/:itemId/likes",
-  celebrate({ body: validateItemID }),
+  validateItemID,
   auth.handleAuthError,
-
   dislikeItem
 );
 

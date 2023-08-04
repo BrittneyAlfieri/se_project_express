@@ -1,33 +1,29 @@
 const router = require("express").Router();
-// const { celebrate } = require("celebrate");
 const clothingItem = require("./clothingItems");
 const user = require("./users");
 const { createUser, login } = require("../controllers/users");
 const auth = require("../middlewares/auth");
-// const NotFoundError = require("../errors/not-found-error");
+const NotFoundError = require("../errors/not-found-error");
 
-// const {
-//   validateUserBody,
-//   validateUserAuthentication,
-// } = require("../middlewares/validation");
+const {
+  validateUserBody,
+  validateUserAuthentication,
+} = require("../middlewares/validation");
 
 router.use("/items", clothingItem);
 router.use("/users", auth.handleAuthError, user);
 
-// router.get(`/crash-rest`, () => {
-//   setTimeout(() => {
-//     throw new Error("Server will crash now");
-//   }, 0);
-// });
+router.get(`/crash-rest`, () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
 
-router.post("/signup", createUser);
-router.post("/signin", login);
+router.post("/signup", validateUserBody, createUser);
+router.post("/signin", validateUserAuthentication, login);
 
-// celebrate({ body: validateUserBody }),
-// celebrate({ body: validateUserAuthentication }),
-
-// router.use(() => {
-//   throw new NotFoundError("NotFoundError");
-// });
+router.use(() => {
+  throw new NotFoundError("NotFoundError");
+});
 
 module.exports = router;
