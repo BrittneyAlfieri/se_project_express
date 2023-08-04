@@ -14,11 +14,11 @@ const {
 router.use("/items", clothingItem);
 router.use("/users", auth.handleAuthError, user);
 
-router.get(`/crash-rest`, () => {
-  setTimeout(() => {
-    throw new Error("Server will crash now");
-  }, 0);
-});
+// router.get(`/crash-rest`, () => {
+//   setTimeout(() => {
+//     throw new Error("Server will crash now");
+//   }, 0);
+// });
 
 router.post("/signup", celebrate({ body: validateUserBody }), createUser);
 router.post("/signin", celebrate({ body: validateUserAuthentication }), login);
