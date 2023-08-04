@@ -4,7 +4,7 @@ const clothingItem = require("./clothingItems");
 const user = require("./users");
 const { createUser, login } = require("../controllers/users");
 const auth = require("../middlewares/auth");
-const NotFoundError = require("../errors/not-found-error");
+// const NotFoundError = require("../errors/not-found-error");
 
 // const {
 //   validateUserBody,
@@ -26,8 +26,8 @@ router.post("/signin", login);
 // celebrate({ body: validateUserBody }),
 // celebrate({ body: validateUserAuthentication }),
 
-router.use(() => {
-  throw new NotFoundError("NotFoundError");
-});
+// router.use(() => {
+//   throw new NotFoundError("NotFoundError");
+// });
 
 module.exports = router;
